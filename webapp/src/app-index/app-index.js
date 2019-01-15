@@ -23,6 +23,11 @@ class AppIndex extends PolymerElement {
       }
     };
   }
+
+  connectedCallback() {
+    super.connectedCallback();
+    console.log("AWS : ",AWS)
+  }
 }
 
 window.customElements.define('app-index', AppIndex);
