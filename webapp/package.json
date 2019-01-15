@@ -2,7 +2,8 @@
   "name": "ServerlessApp",
   "description": "Frontend app to demo the serverless implementation on client side",
   "dependencies": {
-    "@polymer/polymer": "^3.0.0"
+    "@polymer/polymer": "^3.0.0",
+    "aws-sdk": "^2.388.0"
   },
   "devDependencies": {
     "@polymer/test-fixture": "^4.0.2",

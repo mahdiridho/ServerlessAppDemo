@@ -1,4 +1,5 @@
 import {html, PolymerElement} from '@polymer/polymer/polymer-element.js';
+import 'aws-sdk/dist/aws-sdk.min';
 
 /**
  * @customElement
