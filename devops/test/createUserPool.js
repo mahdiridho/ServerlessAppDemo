@@ -21,14 +21,16 @@ let poolParams = {
     "UsernameAttributes": ["email"], // Specifies whether email addresses or phone numbers can be specified as usernames when a user signs up.
     "AutoVerifiedAttributes": ['email'] // The attributes to be auto-verified. Possible values: email, phone_number.
 }
+let poolId;
 
 // Create the new cognito user pool
 CognitoUserPool.createUserPool(poolParams).promise().then((userPool)=>{
 	console.log("User pool just created : "+userPool.UserPool.Id)
+  poolId = userPool.UserPool.Id
 
     let domainParams = {
       Domain: poolName.toLowerCase(), // Domain names can only contain lower-case letters, numbers, and hyphens
-      UserPoolId: userPool.UserPool.Id
+      UserPoolId: poolId
     }
 
     // Set the user pool domain name
@@ -36,6 +38,38 @@ CognitoUserPool.createUserPool(poolParams).promise().then((userPool)=>{
     return CognitoUserPool.createUserPoolDomain(domainParams).promise();
 }).then(()=>{
 	console.log("Set user pool domain name success");
+
+  let providerParams = [
+    {
+      ProviderName: "LoginWithAmazon",
+      ProviderType: "LoginWithAmazon",
+      ProviderDetails: {
+        client_id: <amazon_client_id>,
+        client_secret: <amazon_client_secret>,
+        authorize_scopes:"profile postal_code"
+      }
+    },
+    {
+      ProviderName: "Google",
+      ProviderType: "Google",
+      ProviderDetails: {
+        client_id: <google_client_id>,
+        client_secret: <google_client_secret>,
+        authorize_scopes:"profile email openid"
+      }
+    }
+  ]
+
+    let providers = [];
+    for (let p=0; p<providerParams.length; p++) {
+      providerParams[p].UserPoolId = poolId;
+      providerParams[p].AttributeMapping = {'email':'email'};
+      providers[p] = CognitoUserPool.createIdentityProvider(providerParams[p]).promise();
+    }
+
+    return Promise.all(providers);
+}).then(()=>{
+  console.log("Enable social login providers success");
 }).catch((e)=> {
 	console.log(e.code)
 	console.log(e.message)
