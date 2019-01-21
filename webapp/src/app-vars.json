@@ -1,6 +1,6 @@
 {
 	"poolName" : "UserPoolDemoSG",
 	"userPoolId" : <user_pool_id>,
-	"clientId" : <app_client_id>
-
+	"clientId" : <user_pool_client_id>,
+	"identityPoolId" : <cognito_identity_pool_id>
 }
