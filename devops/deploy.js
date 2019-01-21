@@ -15,6 +15,7 @@ AWS.config.update({
 
 // Import all service class
 let CognitoIdentity = new AWS.CognitoIdentity();
+let IAM = new AWS.IAM();
 
 let cognitoParams = {
 	"IdentityPoolName": prefix+"_pool",
@@ -24,4 +25,34 @@ let cognitoParams = {
 
 CognitoIdentity.createIdentityPool(cognitoParams).promise().then((cognitoIdentity)=>{
 	console.log("Identity Pool just created : "+cognitoIdentity.IdentityPoolId)
+
+	let roleDoc = {
+		"Version": "2012-10-17",
+		"Statement": [{
+			Sid: 'Stmt'+new Date().getTime(),
+			Effect: 'Allow',
+			Principal: { "Federated":"cognito-identity.amazonaws.com" }, // The principal user is coming from cognito identity pool
+			Action: "sts:AssumeRoleWithWebIdentity", // Allow get role from web identity
+			Condition: {
+				"StringEquals": {
+				  "cognito-identity.amazonaws.com:aud" : cognitoIdentity.IdentityPoolId
+				},
+				"ForAnyValue:StringLike": {
+				  "cognito-identity.amazonaws.com:amr" : "unauthenticated" // IAM Role for unauth credential
+				}
+			}
+		}]
+	}
+
+	let roleParams = {
+		RoleName : prefix+"_unauth",
+		AssumeRolePolicyDocument : JSON.stringify(roleDoc)
+	}
+
+    return IAM.createRole(roleParams).promise();
+}).then((iamRole)=>{
+	console.log("Unauthenticated Role just created : ",iamRole.Role.Arn)
+}).catch((e)=> {
+	console.log(e.code)
+	console.log(e.message)
 })

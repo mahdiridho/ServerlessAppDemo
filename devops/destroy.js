@@ -12,6 +12,7 @@ AWS.config.update({
 
 // Import all service class
 let CognitoIdentity = new AWS.CognitoIdentity();
+let IAM = new AWS.IAM();
 
 /** Return whether the Identity Pool ID exists.
 @param next pagination token
@@ -39,17 +40,22 @@ function exists(next){
 	})
 }
 
-// first check if the service exists
-exists().then((exist)=>{
-  if (exist) {
-	let cognitoParams = { IdentityPoolId: exist }
-	console.log(cognitoParams)
-    // Do delete cognito identity
-    return CognitoIdentity.deleteIdentityPool(cognitoParams).promise().then(()=>{
-      console.log("Delete identity pool success");
-    })
-  } else
-    console.log(identityPoolName+" Cognito Pool doesn't exist");
+IAM.deleteRole({RoleName: prefix+"_unauth"}).promise().then(()=>{
+	console.log("Delete IAM Role success")
+
+	// first check if the service exists
+	return exists();
+}).then((poolId)=>{
+	if (poolId) {
+		let cognitoParams = { IdentityPoolId: poolId }
+	    // Do delete cognito identity
+	    return CognitoIdentity.deleteIdentityPool(cognitoParams).promise();
+	} else {
+	    console.log(identityPoolName+" Cognito Pool doesn't exist");
+	    return
+	}
+}).then(()=>{
+	console.log("Delete Cognito Identity Pool success")
 }).catch((e)=> {
   console.log(e.code+" : "+e.message)
 });
