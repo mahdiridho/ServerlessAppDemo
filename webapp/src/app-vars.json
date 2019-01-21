@@ -1,0 +1,6 @@
+{
+	"poolName" : "UserPoolDemoSG",
+	"userPoolId" : <user_pool_id>,
+	"clientId" : <app_client_id>
+
+}
