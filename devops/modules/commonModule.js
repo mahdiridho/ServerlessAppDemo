@@ -8,6 +8,7 @@
 let AWS=require("aws-sdk");
 
 let CognitoUserPool = new AWS.CognitoIdentityServiceProvider();
+let CognitoIdentity = new AWS.CognitoIdentity();
 
 class commonModule {
   /** Get the prefix from the command line argument list.
@@ -75,6 +76,32 @@ class commonModule {
           else // Not found the match ClientName on the finish page list
             return null;
       else // Empty list of clients
+        return null;
+    }).catch((e)=>{
+      throw e;
+    })
+  }
+
+  /** Return whether the Identity Pool ID exists.
+  @param next pagination token
+  @return exist or null
+  */
+  identityExists(identityPoolName, next){
+    let params = {
+      MaxResults: 1
+    };
+    if (next!=null)
+      params.NextToken = next;
+    return CognitoIdentity.listIdentityPools(params).promise().then((list)=> {
+      if (list.IdentityPools && list.IdentityPools[0]) // If the list are available, check the match of IdentityPoolName
+        if (list.IdentityPools[0].IdentityPoolName == identityPoolName) // Found the match IdentityPoolName
+          return list.IdentityPools[0].IdentityPoolId;
+        else // Not found the match IdentityPoolName on the current page list
+          if (list.NextToken) // If there is available next list, loop query list
+            return this.identityExists(identityPoolName, list.NextToken);
+          else // Not found the match IdentityPoolName on the finish page list
+            return null;
+      else // Empty list of identities
         return null;
     }).catch((e)=>{
       throw e;

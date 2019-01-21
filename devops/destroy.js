@@ -2,49 +2,34 @@
 
 "use strict";
 
-let prefix='UnauthDemo';
+let prefix='AuthDemo';
 let identityPoolName = prefix+"_pool";
+let poolName='UserPoolDemoSG';
 
 let AWS=require("aws-sdk");
 AWS.config.update({
   region: "ap-southeast-1"
 });
 
+let CommonModule = require("./modules/commonModule").commonModule;
+let commonModule = new CommonModule();
+let args = commonModule.getPrefix(process.argv);
+let clientName = args;
+if (!clientName)
+  return
+
 // Import all service class
+let CognitoUserPool = new AWS.CognitoIdentityServiceProvider();
 let CognitoIdentity = new AWS.CognitoIdentity();
 let IAM = new AWS.IAM();
 
-/** Return whether the Identity Pool ID exists.
-@param next pagination token
-@return exist or null
-*/
-function exists(next){
-	let params = {
-	  MaxResults: 1
-	};
-	if (next!=null)
-	  params.NextToken = next;
-	return CognitoIdentity.listIdentityPools(params).promise().then((list)=> {
-	  if (list.IdentityPools && list.IdentityPools[0]) // If the list are available, check the match of IdentityPoolName
-	    if (list.IdentityPools[0].IdentityPoolName == identityPoolName) // Found the match IdentityPoolName
-	      return list.IdentityPools[0].IdentityPoolId;
-	    else // Not found the match IdentityPoolName on the current page list
-	      if (list.NextToken) // If there is available next list, loop query list
-	        return exists(list.NextToken);
-	      else // Not found the match IdentityPoolName on the finish page list
-	        return null;
-	  else // Empty list of identities
-	    return null;
-	}).catch((e)=>{
-	  throw e;
-	})
-}
+let userPoolId
 
-IAM.deleteRole({RoleName: prefix+"_unauth"}).promise().then(()=>{
+IAM.deleteRole({RoleName: prefix+"_auth"}).promise().then(()=>{
 	console.log("Delete IAM Role success")
 
 	// first check if the service exists
-	return exists();
+	return commonModule.identityExists(identityPoolName);
 }).then((poolId)=>{
 	if (poolId) {
 		let cognitoParams = { IdentityPoolId: poolId }
@@ -54,8 +39,33 @@ IAM.deleteRole({RoleName: prefix+"_unauth"}).promise().then(()=>{
 	    console.log(identityPoolName+" Cognito Pool doesn't exist");
 	    return
 	}
-}).then(()=>{
-	console.log("Delete Cognito Identity Pool success")
+}).then((identityPool)=>{
+	if (identityPool) {
+		console.log("Delete Cognito Identity Pool success")
+
+		// Check the user pool exists?
+		return commonModule.poolExists(poolName);
+	}
+}).then((userPool)=>{
+	if (userPool) {
+		userPoolId = userPool
+		// Check the app client exists?
+		return commonModule.clientExists(userPoolId, clientName);
+	} else
+	    console.log(poolName+" Pool doesn't exist");
+}).then((clientId)=>{
+	if (clientId) {
+		let clientParams = {
+		  ClientId: clientId,
+		  UserPoolId: userPoolId
+		}
+		// remove the app client from the user pool
+		return CognitoUserPool.deleteUserPoolClient(clientParams).promise()
+	} else
+		console.log(clientName+" client doesn't exist");
+}).then((client)=>{
+	if (client)
+		console.log("Remove app client success")
 }).catch((e)=> {
   console.log(e.code+" : "+e.message)
 });
