@@ -13,6 +13,9 @@ AWS.config.update({
   region: "ap-southeast-1"
 });
 
+let CommonModule = require("../modules/commonModule").commonModule;
+let commonModule = new CommonModule();
+
 // Import the service class
 let CognitoUserPool = new AWS.CognitoIdentityServiceProvider();
 
@@ -23,10 +26,17 @@ let poolParams = {
 }
 let poolId;
 
-// Create the new cognito user pool
-CognitoUserPool.createUserPool(poolParams).promise().then((userPool)=>{
-	console.log("User pool just created : "+userPool.UserPool.Id)
-  poolId = userPool.UserPool.Id
+// Check the user pool exists?
+commonModule.poolExists(poolName).then((exist)=>{
+  if (exist)
+    console.log("User pool already exists : "+exist)
+  else
+  // Create the new cognito user pool
+  return CognitoUserPool.createUserPool(poolParams).promise();
+}).then((userPool)=>{
+  if (userPool) {
+  	console.log("User pool just created : "+userPool.UserPool.Id)
+    poolId = userPool.UserPool.Id
 
     let domainParams = {
       Domain: poolName.toLowerCase(), // Domain names can only contain lower-case letters, numbers, and hyphens
@@ -36,29 +46,31 @@ CognitoUserPool.createUserPool(poolParams).promise().then((userPool)=>{
     // Set the user pool domain name
     // The domain will be used for auth url link
     return CognitoUserPool.createUserPoolDomain(domainParams).promise();
-}).then(()=>{
-	console.log("Set user pool domain name success");
+  }
+}).then((domain)=>{
+  if (domain) {
+  	console.log("Set user pool domain name success");
 
-  let providerParams = [
-    {
-      ProviderName: "LoginWithAmazon",
-      ProviderType: "LoginWithAmazon",
-      ProviderDetails: {
-        client_id: <amazon_client_id>,
-        client_secret: <amazon_client_secret>,
-        authorize_scopes:"profile postal_code"
+    let providerParams = [
+      {
+        ProviderName: "LoginWithAmazon",
+        ProviderType: "LoginWithAmazon",
+        ProviderDetails: {
+          client_id: <amazon_client_id>,
+          client_secret: <amazon_client_secret>,
+          authorize_scopes:"profile postal_code"
+        }
+      },
+      {
+        ProviderName: "Google",
+        ProviderType: "Google",
+        ProviderDetails: {
+          client_id: <google_client_id>,
+          client_secret: <google_client_secret>,
+          authorize_scopes:"profile email openid"
+        }
       }
-    },
-    {
-      ProviderName: "Google",
-      ProviderType: "Google",
-      ProviderDetails: {
-        client_id: <google_client_id>,
-        client_secret: <google_client_secret>,
-        authorize_scopes:"profile email openid"
-      }
-    }
-  ]
+    ]
 
     let providers = [];
     for (let p=0; p<providerParams.length; p++) {
@@ -68,8 +80,10 @@ CognitoUserPool.createUserPool(poolParams).promise().then((userPool)=>{
     }
 
     return Promise.all(providers);
-}).then(()=>{
-  console.log("Enable social login providers success");
+  }
+}).then((social)=>{
+  if (social)
+    console.log("Enable social login providers success");
 }).catch((e)=> {
 	console.log(e.code)
 	console.log(e.message)

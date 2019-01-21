@@ -13,39 +13,16 @@ AWS.config.update({
   region: "ap-southeast-1"
 });
 
+let CommonModule = require("../modules/commonModule").commonModule;
+let commonModule = new CommonModule();
+
 // Import the service class
 let CognitoUserPool = new AWS.CognitoIdentityServiceProvider();
-
-/** Return whether the User Pool ID exists.
-@param next pagination token
-@return exist or null
-*/
-function exists(next){
-    let params = {
-      MaxResults: 1
-    };
-    if (next!=null)
-      params.NextToken = next;
-    return CognitoUserPool.listUserPools(params).promise().then((list)=>{
-      if (list.UserPools && list.UserPools[0]) // If the list are available, check the match of PoolName
-        if (list.UserPools[0].Name == poolName) // Found the match PoolName
-	      return list.UserPools[0].Id;
-        else // Not found the match PoolName on the current page list
-          if (list.NextToken) // If there is available next list, loop query list
-            return exists(list.NextToken);
-          else // Not found the match PoolName on the finish page list
-            return null;
-      else // Empty list of identities
-        return null;
-    }).catch((e)=>{
-      throw e;
-    })
-}
 
 let poolParams = {};
 
 // Check the user pool exists?
-exists().then((userPool)=>{
+commonModule.poolExists(poolName).then((userPool)=>{
 	if (userPool) {
     let domainParams = {
       Domain: poolName.toLowerCase(),
