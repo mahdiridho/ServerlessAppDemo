@@ -22,9 +22,11 @@ let cognitoParams = {
 	"AllowUnauthenticatedIdentities": true,
 	"DeveloperProviderName": "Mahdi"
 }
+let identityPoolId = '';
 
 CognitoIdentity.createIdentityPool(cognitoParams).promise().then((cognitoIdentity)=>{
 	console.log("Identity Pool just created : "+cognitoIdentity.IdentityPoolId)
+	identityPoolId = cognitoIdentity.IdentityPoolId
 
 	let roleDoc = {
 		"Version": "2012-10-17",
@@ -35,7 +37,7 @@ CognitoIdentity.createIdentityPool(cognitoParams).promise().then((cognitoIdentit
 			Action: "sts:AssumeRoleWithWebIdentity", // Allow get role from web identity
 			Condition: {
 				"StringEquals": {
-				  "cognito-identity.amazonaws.com:aud" : cognitoIdentity.IdentityPoolId
+				  "cognito-identity.amazonaws.com:aud" : identityPoolId
 				},
 				"ForAnyValue:StringLike": {
 				  "cognito-identity.amazonaws.com:amr" : "unauthenticated" // IAM Role for unauth credential
@@ -52,6 +54,13 @@ CognitoIdentity.createIdentityPool(cognitoParams).promise().then((cognitoIdentit
     return IAM.createRole(roleParams).promise();
 }).then((iamRole)=>{
 	console.log("Unauthenticated Role just created : ",iamRole.Role.Arn)
+
+    return CognitoIdentity.setIdentityPoolRoles({
+      IdentityPoolId: identityPoolId,
+      Roles: {unauthenticated: iamRole.Role.Arn, authenticated: undefined}
+    }).promise();
+}).then(()=>{
+	console.log("Set identity pool roles success")
 }).catch((e)=> {
 	console.log(e.code)
 	console.log(e.message)
