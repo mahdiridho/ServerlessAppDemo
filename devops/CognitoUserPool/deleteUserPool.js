@@ -12,6 +12,8 @@ let AWS=require("aws-sdk");
 AWS.config.update({
   region: "ap-southeast-1"
 });
+// If we want use other credential profile instead default
+AWS.config.credentials = new AWS.SharedIniFileCredentials({profile: <credential_profile>});
 
 let CommonModule = require("../modules/commonModule").commonModule;
 let commonModule = new CommonModule();

@@ -12,6 +12,8 @@ let AWS=require("aws-sdk");
 AWS.config.update({
   region: "ap-southeast-1"
 });
+// If we want use other credential profile instead default
+AWS.config.credentials = new AWS.SharedIniFileCredentials({profile: <credential_profile>});
 
 let CommonModule = require("../modules/commonModule").commonModule;
 let commonModule = new CommonModule();
@@ -52,15 +54,6 @@ commonModule.poolExists(poolName).then((exist)=>{
   	console.log("Set user pool domain name success");
 
     let providerParams = [
-      {
-        ProviderName: "LoginWithAmazon",
-        ProviderType: "LoginWithAmazon",
-        ProviderDetails: {
-          client_id: <amazon_client_id>,
-          client_secret: <amazon_client_secret>,
-          authorize_scopes:"profile postal_code"
-        }
-      },
       {
         ProviderName: "Google",
         ProviderType: "Google",
