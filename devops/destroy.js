@@ -10,6 +10,8 @@ let AWS=require("aws-sdk");
 AWS.config.update({
   region: "ap-southeast-1"
 });
+// If we want use other credential profile instead default
+AWS.config.credentials = new AWS.SharedIniFileCredentials({profile: <credential_profile>});
 
 let CommonModule = require("./modules/commonModule").commonModule;
 let commonModule = new CommonModule();
@@ -25,8 +27,19 @@ let IAM = new AWS.IAM();
 
 let userPoolId
 
-IAM.deleteRole({RoleName: prefix+"_auth"}).promise().then(()=>{
-	console.log("Delete IAM Role success")
+// Remove role permissions
+Promise.all([
+	IAM.deleteRolePolicy({PolicyName: prefix+"_auth", RoleName: prefix+"_auth"}).promise(),
+	IAM.deleteRolePolicy({PolicyName: prefix+"_unauth", RoleName: prefix+"_unauth"}).promise()
+]).then(()=>{
+	console.log("Remove role permissions success")
+
+	return Promise.all([
+		IAM.deleteRole({RoleName: prefix+"_auth"}).promise(),
+		IAM.deleteRole({RoleName: prefix+"_unauth"}).promise()
+	])
+}).then(()=>{
+	console.log("Delete IAM Roles success")
 
 	// first check if the service exists
 	return commonModule.identityExists(identityPoolName);
