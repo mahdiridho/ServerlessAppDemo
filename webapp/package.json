@@ -3,6 +3,7 @@
   "description": "Frontend app to demo the serverless implementation on client side",
   "dependencies": {
     "@polymer/polymer": "^3.0.0",
+    "amazon-cognito-js": "^1.1.0",
     "aws-sdk": "^2.388.0"
   },
   "devDependencies": {
