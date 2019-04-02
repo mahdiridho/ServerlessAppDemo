@@ -1,16 +1,38 @@
 {
-  "name": "ServerlessApp",
-  "description": "Frontend app to demo the serverless implementation on client side",
+  "name": "polymer-starter-kit",
+  "version": "4.0.0",
+  "description": "A starting point for Polymer apps",
+  "author": "The Polymer Authors",
+  "license": "BSD-3-Clause",
+  "repository": "Polymer/polymer-starter-kit",
+  "scripts": {
+    "start": "polymer serve",
+    "build": "polymer build",
+    "lint": "polymer lint",
+    "test": "polymer test",
+    "test:integration": "polymer build # test that psk builds without error with the CLI"
+  },
   "dependencies": {
+    "@polymer/app-layout": "^3.0.0-pre.15",
+    "@polymer/app-route": "^3.0.0-pre.15",
+    "@polymer/iron-flex-layout": "^3.0.0-pre.15",
+    "@polymer/iron-iconset-svg": "^3.0.0-pre.15",
+    "@polymer/iron-media-query": "^3.0.0-pre.15",
+    "@polymer/iron-pages": "^3.0.0-pre.15",
+    "@polymer/iron-selector": "^3.0.0-pre.15",
+    "@polymer/paper-button": "^3.0.1",
+    "@polymer/paper-icon-button": "^3.0.0-pre.15",
+    "@polymer/paper-input": "^3.0.1",
     "@polymer/polymer": "^3.0.0",
-    "amazon-cognito-js": "^1.1.0",
-    "aws-sdk": "^2.388.0"
+    "@webcomponents/webcomponentsjs": "^2.0.0",
+    "aws-sdk": "^2.433.0"
   },
   "devDependencies": {
-    "@polymer/test-fixture": "^4.0.2",
-    "@webcomponents/webcomponentsjs": "^2.0.0",
-    "chai": "^4.2.0",
-    "mocha": "^5.2.0",
-    "wct-mocha": "^1.0.0"
+    "@lrnwebcomponents/deduping-fix": "^2.0.8",
+    "polymer-cli": "^1.7.1",
+    "wct-browser-legacy": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=8.0"
   }
 }
