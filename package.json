@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/mahdiridho/ServerlessAppDemo#readme",
   "dependencies": {
+    "archiver": "^3.0.0",
     "aws-sdk": "^2.388.0"
   }
 }
