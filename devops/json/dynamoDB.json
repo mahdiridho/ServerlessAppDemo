@@ -1,0 +1,18 @@
+{
+    "KeySchema": [
+        { "AttributeName": "PrimaryKey", "KeyType": "HASH"},
+        { "AttributeName": "SecondaryKey", "KeyType": "RANGE"}
+    ],
+    "AttributeDefinitions": [
+        { "AttributeName": "PrimaryKey", "AttributeType": "S" },
+        { "AttributeName": "SecondaryKey", "AttributeType": "S" }
+    ],
+    "ProvisionedThroughput": {
+        "ReadCapacityUnits": 2,
+        "WriteCapacityUnits": 2
+    },
+    "StreamSpecification": {
+        "StreamEnabled": true,
+        "StreamViewType": "NEW_AND_OLD_IMAGES"
+    }
+}

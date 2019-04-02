@@ -1,0 +1,7 @@
+{
+  "Handler": "index.handler",
+  "Runtime": "nodejs8.10",
+  "Timeout": 30,
+  "MemorySize": 768,
+  "Publish": true
+}
