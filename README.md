@@ -7,8 +7,6 @@ Application Demo to learn Serverless practically. All devops stuff will work wit
 3. npm
 4. polymer-cli
 
-Follow this link https://blog.mahdiridho.xyz/instalasi-nodejs-npm-dan-polymer/ to prepare all required stuff above
-
 # Quick Installation
 Install the node packages
 
@@ -26,16 +24,6 @@ devops$ ./destroy.js
 Go to webapp folder and install the npm packages
 
 webapp$ npm i
-
-Before serve the webapp, fix the file node_modules/amazon-cognito-js/dist/amazon-cognito.min.js of line 13 :
-
-	factory(root["AWS"]);
-
-to be
-
-	factory(AWS);
-
-It will fix the issue of wrong AWS variable. Now, ready to serve:
 
 webapp$ polymer serve
 
