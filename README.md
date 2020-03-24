@@ -7,8 +7,6 @@ Application Demo to learn Serverless practically. All devops stuff will work wit
 3. npm
 4. polymer-cli
 
-Follow this link https://blog.mahdiridho.xyz/instalasi-nodejs-npm-dan-polymer/ to prepare all required stuff above
-
 # Quick Installation
 Install the node packages
 
