@@ -1,7 +1,0 @@
-{
-  "name": "ServerlessApp",
-  "short_name": "ServerlessApp",
-  "description": "Frontend app to demo the serverless implementation on client side",
-  "start_url": "/",
-  "display": "standalone"
-}
