@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>Manage Code-less ACL to AWS Resources</title>
+  <meta charset="utf-8">
+  <meta name="generator" content="@open-wc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="Description" content="Adjustable End-to-End ACL with AWS IAM Role Policy">
+  <style>
+    div#ready {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <p id="identity"></p>
+  <p id="result"></p>
+  <button onclick="getIdentity()">Get identity</button>
+  <button onclick="removeIdentity()">Remove identity</button>
+  <hr>
+  <div id="ready">
+    <button onclick="putItem()">Put Item</button>
+    <button onclick="query()">Query</button>
+  </div>
+  <script>
+    var pid = document.querySelector("p#identity")
+    var presult = document.querySelector("p#result")
+    var actionDiv = document.querySelector("div#ready")
+    var dynamodb;
+
+    // Get role identity
+    function getIdentity() {
+      // define your identity pool id
+      let cognitoParam = {
+        'IdentityPoolId': "<put_your_identity_pool_id_here>"
+      }
+
+      // setting up AWS config including region and which credential type
+      AWS.config.update({
+        region: "ap-southeast-1",
+        credentials: new AWS.CognitoIdentityCredentials(cognitoParam)
+      })
+
+      // requesting aws temporary credentials
+      AWS.config.credentials.getPromise().then(() => {
+        console.log(AWS.config.credentials.identityId)
+        pid.textContent = "Your identity: " + AWS.config.credentials.identityId
+
+        // initialize dynamodb instance
+        dynamodb = new AWS.DynamoDB.DocumentClient()
+        // show up the action buttons once got identity
+        actionDiv.style.display = "block"
+      })
+    }
+
+    // Remove role identity
+    function removeIdentity() {
+      AWS.config.credentials.clearCachedId()
+      location.reload(true)
+    }
+
+    // put new item to dynamodb, put your table name as defined
+    function putItem() {
+      var params = {
+        TableName: "<put_your_table_name_here>",
+        Item: {
+          // Set identity as partition key value
+          "PartitionKey": AWS.config.credentials.identityId,
+          "SortKey": "" + new Date().getTime(),
+          "message": "Hello Appycloud! I would like to say the world just is too noisy"
+        }
+      }
+      dynamodb.put(params).promise().then(res => {
+        console.log(res)
+      }).catch(e => {
+        alert(e.code)
+      })
+    }
+
+    // query the table items based on user identity key
+    function query() {
+      var params = {
+        TableName: "<put_your_table_name_here>",
+        KeyConditionExpression: "PartitionKey = :k",
+        ExpressionAttributeValues: {
+          ":k": AWS.config.credentials.identityId
+        }
+      }
+      dynamodb.query(params).promise().then(res => {
+        console.log(res.Items)
+        var txt = ""
+        res.Items.forEach(item => {
+          txt += item.PartitionKey +", "+ item.SortKey +", "+ item.message +"<br>"
+        })
+        presult.innerHTML = txt
+      }).catch(e => {
+        alert(e.code)
+      })
+    }
+  </script>
+  <script src="https://sdk.amazonaws.com/js/aws-sdk-2.742.0.min.js"></script>
+</body>
+
+</html>
